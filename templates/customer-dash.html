@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+<h1>Dashboard</h1>
+
+<p>Welcome to One Stop Shop. This is your dashboard.</p>
+
+<h2>Search</h2>
+
+<form method="GET" action="{{url_for('search')}}">
+    <label for="bname-title">Business Name: </label>
+    <input id="bname-title" name="search-bname" value="" placeholder="Test Business">
+    <p><input type="submit" value="Search"></p>
+</form>
+{% endblock %}
