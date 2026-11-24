@@ -278,8 +278,13 @@ def post_image(post_id):
 
 @app.route('/search/')
 def search():
-    bname = request.args['search-bname']
-    with dbi.connect() as conn:
+    bname = request.args.get('search-bname')
+
+    # If the user has not submitted a search, show the search form
+    if not bname:
+        return render_template('search.html', page_title="Search")   
+
+    with dbi.connect() as conn:     
         with dbi.dict_cursor(conn) as curs:
             curs.execute('use szab304_db')
             curs.execute('''select business_name from business where business_name like %s''', ('%' + bname + '%'))
@@ -287,7 +292,7 @@ def search():
             #If there is no business with that in it's name, then flash a message and redirect user to their dashboard.
             if not businesses:
                 flash(f'There is no business with {bname} in the name')
-                return render_template('customer-dash.html', page_title='Dashboard')
+                return render_template('search.html', page_title='Search')
             return render_template('search.html', page_title = "Search", businesses=businesses)
 
 @app.route('/getProfile/<business_name>')

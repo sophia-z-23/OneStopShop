@@ -16,6 +16,7 @@
   <ul>
     <li><a href="{{url_for('index')}}">Home</a></li>
     <li><a href="{{url_for('about')}}">About</a></li>
+    <li><a href="{{url_for('search')}}">Search</a></li>
     {% if session.get('account_id') %}
       {% if session.get('account_type') == 'business' %}
       <li><a href="{{url_for('new_post')}}">New posting</a></li>
