@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+<nav>
+  <ul>
+    <li><a href="{{url_for('dashboard')}}">Dashboard</a></li>
+  </ul>
+</nav>
+
+<h1>Search Results</h1>
+
+<p>These are your search results.</p>
+
+<body>
+    {% for business in businesses %}
+    <li><a class="link" href="/getProfile/{{ business.business_name }}">{{ business.business_name }}</a></li>
+    {% endfor %}
+</body>
+{% endblock %}

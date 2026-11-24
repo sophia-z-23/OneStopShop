@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+<nav>
+  <ul>
+    <li><a href="{{url_for('dashboard')}}">Dashboard</a></li>
+  </ul>
+</nav>
+
+<p>{{ business_name }}:</p>
+<p>Email: {{ contact_info }}</p>
+<p>About: {{ description }}</p>
+{% endblock %}
