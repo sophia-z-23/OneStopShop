@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang='en'>
+<head>
+    <meta charset='utf-8'>
+    <!-- for mobile-friendly pages -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name=author content="">
+    <title>{{ page_title }}</title>
+    <link rel='stylesheet' href="{{url_for('static', filename = 'style.css')}}">
+    {% block head_stuff %} {% endblock %}
+</head>
+<body>
+
+{% block nav %}
+<nav>
+  <ul>
+    <li><a href="{{url_for('index')}}">Home</a></li>
+    <li><a href="{{url_for('about')}}">About</a></li>
+    {% if session.get('account_id') %}
+      {% if session.get('account_type') == 'business' %}
+      <li><a href="{{url_for('new_post')}}">New posting</a></li>
+      <li><a href="{{url_for('my_postings')}}">My postings</a></li>
+      {% endif %}
+      <li>Logged in as {{ session['username'] }}</li>
+      <li>
+        <form method="post" action="{{url_for('logout')}}" style="display:inline">
+          <button type="submit">Log out</button>
+        </form>
+      </li>
+    {% else %}
+      <li><a href="{{url_for('login')}}">Log in</a></li>
+      <li><a href="{{url_for('join')}}">Join</a></li>
+    {% endif %}
+  </ul>
+</nav>
+{% endblock %}
+
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+<div id="messages">
+  {% for msg in messages %}
+  <p>{{msg}}</p>
+  {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+            
+{% block main_content %}
+<h1>Welcome!</h1>
+{% endblock %}
+
+  <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+  {% block end_scripts %}
+  {% endblock %}
+  
+</body>
+</html>

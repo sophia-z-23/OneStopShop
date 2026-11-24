@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+<h1>My Postings</h1>
+
+<p><a href="{{ url_for('new_post') }}">Create a new posting</a></p>
+
+{% if posts %}
+<table>
+  <tr><th>Image</th><th>Title</th><th>Type</th><th>Price</th><th>Created</th></tr>
+  {% for post in posts %}
+  <tr>
+    <td>
+      {% if post.image_link %}
+      <img src="{{ url_for('post_image', post_id=post.post_id) }}" alt="{{ post.title }}" style="max-width: 80px">
+      {% endif %}
+    </td>
+    <td><a href="{{ url_for('show_post', post_id=post.post_id) }}">{{ post.title or '(untitled)' }}</a></td>
+    <td>{{ 'Service' if post.post_type == 'scheduling' else 'Item' }}</td>
+    <td>{% if post.price is not none %}${{ '%.2f' | format(post.price) }}{% endif %}</td>
+    <td>{{ post.created_at or '' }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% else %}
+<p>You haven't made any postings yet.</p>
+{% endif %}
+{% endblock %}

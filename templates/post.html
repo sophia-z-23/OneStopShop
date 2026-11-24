@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+<h1>{{ post.title }}</h1>
+
+{% if post.image_link %}
+<img src="{{ url_for('post_image', post_id=post.post_id) }}" alt="{{ post.title }}" style="max-width: 300px">
+{% endif %}
+
+{% if post.price is not none %}
+<p>Price: ${{ '%.2f' | format(post.price) }}</p>
+{% endif %}
+
+{% if post.description %}
+<p>{{ post.description }}</p>
+{% endif %}
+
+{% if post.post_type == 'scheduling' %}
+<h2>Time slots</h2>
+<ul>
+  {% for slot in slots %}
+  <li>
+    {{ slot.start_time.strftime('%a %b %d, %I:%M %p') }}
+    to {{ slot.end_time.strftime('%I:%M %p') }}
+    {% if slot.customer_id is not none %}(booked){% else %}(open){% endif %}
+  </li>
+  {% endfor %}
+</ul>
+{% endif %}
+{% endblock %}

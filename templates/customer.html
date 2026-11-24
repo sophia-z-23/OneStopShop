@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+<h1>{{ customer.username }}</h1>
+
+<p>Email:
+  {% if customer.email %}
+  <a href="mailto:{{ customer.email }}">{{ customer.email }}</a>
+  {% else %}
+  not given
+  {% endif %}
+</p>
+
+{% if customer.contact_info %}
+<p>Contact info: {{ customer.contact_info }}</p>
+{% endif %}
+
+{% if bookings %}
+<h2>Bookings with you</h2>
+<ul>
+  {% for b in bookings %}
+  <li>
+    <a href="{{ url_for('show_post', post_id=b.post_id) }}">{{ b.title or '(untitled)' }}</a>:
+    {{ b.start_time.strftime('%a %b %d, %I:%M %p') }} to {{ b.end_time.strftime('%I:%M %p') }}
+  </li>
+  {% endfor %}
+</ul>
+{% endif %}
+
+{% if inquiries %}
+<h2>Inquiries to you</h2>
+<ul>
+  {% for q in inquiries %}
+  <li>
+    About <a href="{{ url_for('show_post', post_id=q.post_id) }}">{{ q.title or '(untitled)' }}</a>
+    ({{ q.created_at }}){% if q.message %}: {{ q.message }}{% endif %}
+  </li>
+  {% endfor %}
+</ul>
+{% endif %}
+{% endblock %}
