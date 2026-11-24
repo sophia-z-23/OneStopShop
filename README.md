@@ -17,6 +17,9 @@ OneStopShop
   username, email, and contact info, along with that customer's bookings
   and inquiries with the business. Only businesses the customer has
   booked with or sent an inquiry to can see the profile.
+- **Business profiles for customers.** A customer can see a businesses
+  name, email, and contact info.
+- **Search.** Customers can click on the search button on the main or  on their dashboard and search for businesses.
 
 ## Files
 
@@ -32,6 +35,9 @@ OneStopShop
 | `templates/customer.html` | Customer profile as a business sees it |
 | `templates/base.html` | Shared layout; the nav changes with login state |
 | `uploads/` | Uploaded images, named by post id (files not committed to git) |
+| `templates/business-profile.html` | A list of business information shown to the customer upon clicking on a search business |
+| `templates/search.html` | Page where customers can search for businesses |
+| `templates/customer-dash.html` | Customer dashboard |
 
 ## Routes
 
@@ -46,6 +52,8 @@ OneStopShop
 | `/post-image/<post_id>` | anyone | The image file for a posting |
 | `/customer/<customer_id>` | businesses the customer has booked with or contacted | Customer profile |
 | `/test-login/<account_id>` | anyone | **Testing only.** Logs in as any account without a password |
+| `/search/` | customers | Search for businesses |
+| `/getProfile/<business_name>` | customers | gets the profile of a business |
 
 ## Database changes
 
