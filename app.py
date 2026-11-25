@@ -9,6 +9,7 @@ app = Flask(__name__)
 import os
 import secrets
 import pymysql
+import magic
 import cs304dbi as dbi
 import posting_db
 import auth_db
@@ -27,6 +28,13 @@ app.config['TRAP_BAD_REQUEST_ERRORS'] = True
 app.config['UPLOADS'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024
 
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+ALLOWED_MIME_TYPES = {'image/png': 'png', 'image/jpeg': 'jpg',
+                      'image/gif': 'gif'}
+
+def allowed_file(filename):
+    """True if the filename has an extension on the allowed list."""
+    return ('.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS)
 
 @app.route('/')
 def index():
@@ -77,7 +85,7 @@ def join():
     session['username'] = username
     session['account_type'] = account_type
     session['logged_in'] = True
-    flash('Welcome, {}!'.format(username))
+    flash('Welcome, {username}!')
     if account_type == 'business':
         return redirect(url_for('new_post'))
     return redirect(url_for('index'))
@@ -120,7 +128,7 @@ def test_login(account_id):
     with dbi.connect() as conn:
         row = auth_db.get_account(conn, account_id)
     if row is None:
-        flash('No account with id {}'.format(account_id))
+        flash('No account with id {account_id}')
         return redirect(url_for('index'))
     session['account_id'] = row['account_id']
     session['username'] = row['username']
@@ -157,54 +165,67 @@ def new_post():
         return redirect(url_for('index'))
     if request.method == 'GET':
         return render_template('new_post.html', page_title='New Posting')
-    # POST: read and check the form
-    post_type = request.form.get('post_type')
-    title = request.form.get('title', '').strip()
-    price = request.form.get('price', '').strip() or None
-    description = request.form.get('description', '').strip() or None
-    f = request.files.get('pic')
-    if post_type not in ('item', 'scheduling'):
-        flash('Choose item or scheduling')
-        return render_template('new_post.html', page_title='New Posting')
-    if not title:
-        flash('Please give your posting a title')
-        return render_template('new_post.html', page_title='New Posting')
-    if post_type == 'item' and price is None:
-        flash('Items need a price')
-        return render_template('new_post.html', page_title='New Posting')
-    # The image is optional; only check it if one was chosen
-    has_image = f is not None and f.filename != ''
-    if has_image:
-        ext = f.filename.rsplit('.', 1)[-1].lower()
-        if ext not in ('jpg', 'jpeg', 'png', 'gif'):
-            flash('Image must be a jpg, png or gif')
+    else:
+        pathname = None
+        try:
+            post_type = request.form.get('post_type')
+            title = request.form.get('title', '').strip()
+            price = request.form.get('price', '').strip() or None
+            description = request.form.get('description', '').strip() or None
+            #datetime-local inputs reformat for MySQL
+            start_time = request.form.get('start_time', '').replace('T', ' ')
+            end_time = request.form.get('end_time', '').replace('T', ' ')
+            f = request.files.get('pic')   #the image is optional
+            if post_type not in ('item', 'scheduling'):
+                flash('Choose item or scheduling')
+                return render_template('new_post.html', page_title='New Posting')
+            if not title:
+                flash('Please give your posting a title')
+                return render_template('new_post.html', page_title='New Posting')
+            if post_type == 'item' and price is None:
+                flash('Items need a price')
+                return render_template('new_post.html', page_title='New Posting')
+            if post_type == 'scheduling':
+                if not (start_time and end_time):
+                    flash('Services need a start and end time')
+                    return render_template('new_post.html', page_title='New Posting')
+                if start_time >= end_time:
+                    flash('End time must be after start time')
+                    return render_template('new_post.html', page_title='New Posting')
+            has_image = f is not None and f.filename != ''
+            if has_image:
+                user_filename = f.filename
+                # Layer 1: Check Extension
+                if not allowed_file(user_filename):
+                    flash('Invalid file extension. Allowed types: png, jpg, jpeg, gif.')
+                    return render_template('new_post.html', page_title='New Posting')
+                # Layer 3: Inspect Magic Bytes (File Content)
+                header_bytes = f.read(2048)
+                mime_type = magic.from_buffer(header_bytes, mime=True)
+                f.seek(0)  # Reset stream position to the beginning before saving!
+                if mime_type not in ALLOWED_MIME_TYPES:
+                    flash('Uploaded file content does not match allowed image types.')
+                    return render_template('new_post.html', page_title='New Posting')
+                ext = user_filename.split('.')[-1]
+            with dbi.connect() as conn:
+                # insert first so the file can be named after its post_id
+                post_id = posting_db.insert_posting(conn, account_id, post_type,
+                                                    title, price, description)
+                if has_image:
+                    # Layer 2: Sanitize Filename
+                    filename = secure_filename(f'{post_id}.{ext}')
+                    pathname = os.path.join(app.config['UPLOADS'],filename)
+                    f.save(pathname)
+                    os.chmod(pathname, 0o444)    # readable by owner, group and others
+                    posting_db.set_image(conn, post_id, filename)
+                if post_type == 'scheduling':
+                    posting_db.insert_time_slot(conn, post_id, start_time, end_time)
+                conn.commit()
+            flash('Upload successful')
+            return redirect(url_for('show_post', post_id=post_id))
+        except Exception as err:
+            flash(f'Upload failed {err}')
             return render_template('new_post.html', page_title='New Posting')
-    # datetime-local inputs send '2026-11-23T09:00'
-    start_time = request.form.get('start_time', '').replace('T', ' ')
-    end_time = request.form.get('end_time', '').replace('T', ' ')
-    if post_type == 'scheduling':
-        if not (start_time and end_time):
-            flash('Services need a start and end time')
-            return render_template('new_post.html', page_title='New Posting')
-        if start_time >= end_time:
-            flash('End time must be after start time')
-            return render_template('new_post.html', page_title='New Posting')
-    with dbi.connect() as conn:
-        # Insert the row first so we can name the file after its post_id
-        post_id = posting_db.insert_posting(conn, account_id, post_type,
-                                            title, price, description)
-        if has_image:
-            filename = secure_filename('{}.{}'.format(post_id, ext))
-            pathname = os.path.join(app.config['UPLOADS'], filename)
-            f.save(pathname)
-            os.chmod(pathname, 0o444)
-            posting_db.set_image(conn, post_id, filename)
-        if post_type == 'scheduling':
-            posting_db.insert_time_slot(conn, post_id, start_time, end_time)
-        conn.commit()
-
-    flash('Posting created')
-    return redirect(url_for('show_post', post_id=post_id))
 
 
 @app.route('/my-postings/')
@@ -272,9 +293,6 @@ def post_image(post_id):
         return redirect(url_for('index'))
     return send_from_directory(app.config['UPLOADS'], post['image_link'])
 
-# @app.route('/')
-# def dashboard():
-#     return render_template('customer-dash.html', page_title='Dashboard')
 
 @app.route('/search/')
 def search():
