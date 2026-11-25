@@ -1,5 +1,5 @@
 """
-Author: Sophia Zhang
+Author: Aldyn Borello, Sophia Zhang
 """
 from flask import (Flask, render_template, make_response, url_for, request,
                    redirect, flash, session, send_from_directory, jsonify)
@@ -85,7 +85,7 @@ def join():
     session['username'] = username
     session['account_type'] = account_type
     session['logged_in'] = True
-    flash('Welcome, {username}!')
+    flash(f'Welcome, {username}!')
     if account_type == 'business':
         return redirect(url_for('new_post'))
     return redirect(url_for('index'))
@@ -128,7 +128,7 @@ def test_login(account_id):
     with dbi.connect() as conn:
         row = auth_db.get_account(conn, account_id)
     if row is None:
-        flash('No account with id {account_id}')
+        flash(f'No account with id {account_id}')
         return redirect(url_for('index'))
     session['account_id'] = row['account_id']
     session['username'] = row['username']

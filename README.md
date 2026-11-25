@@ -1,10 +1,4 @@
-## OneStopShop: accounts, postings, and customer profiles
-
-Adds user accounts, business postings with image
-uploads and time slots, and business-facing customer profiles to
-OneStopShop
-
-## Features
+## Draft Features
 
 - **Join, log in, log out** Users sign up as a business or a customer.
   Passwords are hashed with Passlib (argon2)
@@ -45,7 +39,7 @@ OneStopShop
 |---|---|---|
 | `/join/` | anyone | Create a business or customer account |
 | `/login/` | anyone | Log in |
-| `/logout/` (POST) | logged in | Log out |
+| `/logout/` | anyone logged in | Log out |
 | `/post/new/` | businesses | Create a posting |
 | `/my-postings/` | businesses | List your postings |
 | `/post/<post_id>` | anyone | View a posting |
