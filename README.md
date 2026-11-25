@@ -6,20 +6,20 @@ OneStopShop
 
 ## Features
 
-- **Join, log in, log out.** Users sign up as a business or a customer.
+- **Join, log in, log out** Users sign up as a business or a customer.
   Passwords are hashed with Passlib (argon2)
-- **Business-only postings.** Logged-in businesses can post an *item*
+- **Business-only postings** Logged-in businesses can post an *item*
   (title, price, optional image) or a *service* (title, optional price,
   optional image, and a time slot). Customers and logged-out users cannot access this feature.
-- **My postings.** Each business can see a list of everything it has
+- **My postings** Each business can see a list of everything it has
   posted.
-- **Customer profiles for businesses.** A business can see a customer's
+- **Customer profiles for businesses** A business can see a customer's
   username, email, and contact info, along with that customer's bookings
   and inquiries with the business. Only businesses the customer has
   booked with or sent an inquiry to can see the profile.
-- **Business profiles for customers.** A customer can see a businesses
+- **Business profiles for customers** A customer can see a businesses
   name, email, and contact info.
-- **Search.** Customers can click on the search button on the main or  on their dashboard and search for businesses.
+- **Search** Customers can click on the search button on the main or  on their dashboard and search for businesses.
 
 ## Files
 
@@ -51,7 +51,7 @@ OneStopShop
 | `/post/<post_id>` | anyone | View a posting |
 | `/post-image/<post_id>` | anyone | The image file for a posting |
 | `/customer/<customer_id>` | businesses the customer has booked with or contacted | Customer profile |
-| `/test-login/<account_id>` | anyone | **Testing only.** Logs in as any account without a password |
+| `/test-login/<account_id>` | anyone | **Testing only** Logs in as any account without a password |
 | `/search/` | customers | Search for businesses |
 | `/getProfile/<business_name>` | customers | gets the profile of a business |
 
@@ -61,9 +61,9 @@ changes made to initial `szab304_db`:
 
 ```sql
 alter table posting modify post_id int not null auto_increment;
-alter table posting add column title varchar(100) after post_type;
-alter table posting add column price decimal(8,2) after image_link;
-alter table posting add column description varchar(500) after price;
+alter table posting add column title varchar(100);
+alter table posting add column price decimal(8,2);
+alter table posting add column description varchar(500);
 alter table time_slot modify slot_id int not null auto_increment;
 
 create table inquiry (
