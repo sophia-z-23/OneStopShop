@@ -2,3 +2,5 @@ uploads/*
 !uploads/.gitkeep
 __pycache__/
 cs304dbi.py
+venv/
+__pycache__/
