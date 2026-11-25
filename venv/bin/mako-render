@@ -1,6 +1,0 @@
-#!/students/ab161/cs304/project/draft2/OneStopShop/venv/bin/python
-import sys
-from mako.cmd import cmdline
-if __name__ == '__main__':
-    sys.argv[0] = sys.argv[0].removesuffix('.exe')
-    sys.exit(cmdline())
